@@ -38,6 +38,18 @@ def convert_2d_list_to_bfloat16_binary(input_list):
     """
     return [[bfloat16_to_binary(value) for value in row] for row in input_list]
 
+def convert_1d_list_to_bfloat16_binary(input_list):
+    """
+    Convert a 1D list of floats to their BFLOAT16 binary representations.
+
+    Args:
+        input_list (list of float): The 1D list of float values.
+
+    Returns:
+        list of str: The 1D list of BFLOAT16 binary representations.
+    """
+    return [bfloat16_to_binary(value) for value in input_list]
+
 ################################### save .txt ###################################
 
 def save_2d_list_to_file(input_list, filename):
@@ -52,11 +64,26 @@ def save_2d_list_to_file(input_list, filename):
         for row in input_list:
             f.write(''.join(row) + '\n')
             
-################################### random bfloat ###################################
+def save_1d_list_to_file(input_list, filename):
+    """
+    Save a 1D list to a text file, with each element on a new line.
+
+    Args:
+        input_list (list of str): The 1D list to save.
+        filename (str): The name of the file to save to.
+    """
+    with open(filename, 'w') as f:
+        for item in input_list:
+            f.write(item + '\n')
+       
+################################### random bfloat & fp ###################################
+
+torch.manual_seed(seed=17)
 
 A_fp64 = torch.rand((64, 128), dtype=torch.float64) # 0 ~ 1
 B_fp64 = torch.rand((64, 128), dtype=torch.float64)
 
+"""
 # scaling
 def tensor_scaling(tensor):
     scaled_tensor = tensor * (10.0 - 1.0) + 1.0
@@ -65,29 +92,120 @@ def tensor_scaling(tensor):
 A_fp64 = tensor_scaling(A_fp64)
 B_fp64 = tensor_scaling(B_fp64)
 
-################################### For SW test ###################################
+"""
 
 A_bf16 = A_fp64.to(dtype=torch.bfloat16)
 A_fp16 = A_fp64.to(dtype=torch.float16)
 A_fp32 = A_fp64.to(dtype=torch.float32) # same range as Bfloat16
 
-print(A_bf16[0][0])
-print(A_fp16[0][0])
-print(A_fp32[0][0])
-print(A_fp64[0][0])
+B_bf16 = B_fp64.to(dtype=torch.bfloat16)
+B_fp16 = B_fp64.to(dtype=torch.float16)
+B_fp32 = B_fp64.to(dtype=torch.float32) # same range as Bfloat16
+
+
+
+################################### For SW test ###################################
+
+# <Matmul>
+
+print("bf16 : ", A_bf16[0][0])
+print("fp16 : ", A_fp16[0][0])
+print("fp32 : ", A_fp32[0][0])
+print("fp64 : ", A_fp64[0][0])
+print('')
+
+output_fp16 = A_fp16 @ B_fp16.T
+output_fp32 = A_fp32 @ B_fp32.T
+output_fp64 = A_fp64 @ B_fp64.T
+
+OUTPUT = A_bf16 @ B_bf16.T
+
+print("Matmul result (1st row) bf16 : ", OUTPUT[0])
+print("Matmul result (1st row) fp16 : ", output_fp16[0])
+print("Matmul result (1st row) fp32 : ", output_fp32[0])
+print("Matmul result (1st row) fp64 : ", output_fp64[0])
+
+
+# <Each Adder>
+
+def sum_two_lists(list1, list2):
+    """
+    Sums the elements of two lists element-wise.
+
+    Args:
+        list1 (list of numbers): The first input list.
+        list2 (list of numbers): The second input list.
+
+    Returns:
+        list of numbers: A list containing the sums of the corresponding elements.
+    """
+    return [a + b for a, b in zip(list1, list2)]
+
+adder_output = sum_two_lists(A_bf16[0], B_bf16[0]) # 128 outputs
+
+
+# <PE Array>
+
+def mul_two_lists(list1, list2):
+    """
+    Sums the elements of two lists element-wise.
+
+    Args:
+        list1 (list of numbers): The first input list.
+        list2 (list of numbers): The second input list.
+
+    Returns:
+        list of numbers: A list containing the sums of the corresponding elements.
+    """
+    return [a * b for a, b in zip(list1, list2)]
+
+PE_array_output = mul_two_lists(A_bf16[0], B_bf16[0])
+
+# <Adder tree>
+
+# Accumulation in order
+def sum_all_elements(input_list):
+    """
+    Sums all the elements in a list.
+
+    Args:
+        input_list (list of numbers): The list of numbers.
+
+    Returns:
+        number: The sum of all elements in the list.
+    """
+    return sum(input_list)
+
+accumulation = sum(A_bf16[0])
+
+# Adder Tree
+from Adder_tree import Adder_tree
+
+adder_tree = Adder_tree(A_bf16[0], count=128)
 
 """
+
 ################################### For HW test ###################################
 
 
-A_binary = convert_2d_list_to_bfloat16_binary(A)
-B_binary = convert_2d_list_to_bfloat16_binary(B)
+# Matmul TB
+
+A_binary = convert_2d_list_to_bfloat16_binary(A_bf16)
+B_binary = convert_2d_list_to_bfloat16_binary(A_bf16)
+OUTPUT = convert_2d_list_to_bfloat16_binary(OUTPUT)
 
 save_2d_list_to_file(A_binary, "A_64x128_raw.txt")
 save_2d_list_to_file(B_binary, "B_64x128_raw.txt")
-
-OUTPUT = A @ B.T
 save_2d_list_to_file(OUTPUT, "OUT_64x64_raw.txt")
-#print(OUTPUT.type())
+
+# Adder, Adder Tree, PE Array TB
+
+
+        
+    
+
+save_1d_list_to_file(A_bf16[0])
+save_1d_list_to_file(B_bf16[0])
+save_1d_list_to_file()
 
 """
