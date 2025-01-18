@@ -108,6 +108,10 @@ B_fp32 = B_fp64.to(dtype=torch.float32) # same range as Bfloat16
 
 # <Matmul>
 
+print('')
+print("< Matmul SW TEST >")
+print('')
+
 print("bf16 : ", A_bf16[0][0])
 print("fp16 : ", A_fp16[0][0])
 print("fp32 : ", A_fp32[0][0])
@@ -128,6 +132,11 @@ print("Matmul result (1st row) fp64 : ", output_fp64[0])
 
 # <Each Adder>
 
+print('')
+print('')
+print("< Adder SW TEST : BF16 only>")
+print('')
+
 def sum_two_lists(list1, list2):
     """
     Sums the elements of two lists element-wise.
@@ -139,12 +148,17 @@ def sum_two_lists(list1, list2):
     Returns:
         list of numbers: A list containing the sums of the corresponding elements.
     """
-    return [a + b for a, b in zip(list1, list2)]
+    return [(a + b).item() for a, b in zip(list1, list2)]
 
 adder_output = sum_two_lists(A_bf16[0], B_bf16[0]) # 128 outputs
+print("Adder result (A, B first row) : ", adder_output)
 
+# <PE Array> : same as each Multiplier
 
-# <PE Array>
+print('')
+print('')
+print("< PE Multiply SW TEST : BF16 only>")
+print('')
 
 def mul_two_lists(list1, list2):
     """
@@ -157,31 +171,49 @@ def mul_two_lists(list1, list2):
     Returns:
         list of numbers: A list containing the sums of the corresponding elements.
     """
-    return [a * b for a, b in zip(list1, list2)]
+    return [(a * b).item() for a, b in zip(list1, list2)]
 
 PE_array_output = mul_two_lists(A_bf16[0], B_bf16[0])
+print("PE Multiplay result (A, B first row) : ", PE_array_output)
 
 # <Adder tree>
 
-# Accumulation in order
-def sum_all_elements(input_list):
-    """
-    Sums all the elements in a list.
+print('')
+print('')
+print("< Adder tree vs. Accumulation SW TEST : BF16 only>")
+print('')
 
-    Args:
-        input_list (list of numbers): The list of numbers.
-
-    Returns:
-        number: The sum of all elements in the list.
-    """
-    return sum(input_list)
+# 1. Accumulation in order
 
 accumulation = sum(A_bf16[0])
+print("bf16 Accumulation result (A first row) : ", accumulation)
+#accumulation = sum(B_fp16[0])
+#print("Accumulation result (B first row) : ", accumulation)
 
-# Adder Tree
+accumulation = sum(A_fp16[0])
+print("fp16 Accumulation result (A first row) : ", accumulation)
+accumulation = sum(A_fp32[0])
+print("fp32 Accumulation result (A first row) : ", accumulation)
+accumulation = sum(A_fp64[0])
+print("fp64 Accumulation result (A first row) : ", accumulation)
+print('')
+
+# 2. Adder Tree
 from Adder_tree import Adder_tree
 
-adder_tree = Adder_tree(A_bf16[0], count=128)
+adder_tree_A = Adder_tree(A_bf16[0], count=128)
+print("bf16 Adder tree result (A first row) : ", adder_tree_A)
+#adder_tree_B = Adder_tree(B_bf16[0], count=128)
+#print("Adder tree result (B first row) : ", adder_tree_B)
+
+adder_tree_fp16 = Adder_tree(A_fp16[0], count=128)
+print("fp16 Adder tree result (A first row) : ", adder_tree_fp16)
+adder_tree_fp32 = Adder_tree(A_fp32[0], count=128)
+print("fp32 Adder tree result (A first row) : ", adder_tree_fp32)
+adder_tree_fp64 = Adder_tree(A_fp64[0], count=128)
+print("fp64 Adder tree result (A first row) : ", adder_tree_fp64)
+print('')
+
 
 """
 
