@@ -1,0 +1,5 @@
+The corresponding Matmul_top_FPGA and the input memory module have the same version numbers.
+Memory versions that do not have the corresponding version of the FPGA module are only for memory logic and synthesizability testing. 
+The file used to generate the final FPGA bitstream was Matmul_top_FPGA_v4 (Input memory partition, factor 2), and the input memory used an external IP. 
+The test bench used Matmul_top_FPGA_v1, and input_memory_v1. (No input memory partition)
+You can ignore the rest of the versions.

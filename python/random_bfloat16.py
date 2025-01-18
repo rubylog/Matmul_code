@@ -1,3 +1,5 @@
+# >> Module for generating data for test bench and verifying bfloat16 accuracy on sw.
+
 import torch
 
 ################################### bfloat to binary converting ###################################
@@ -50,6 +52,8 @@ def convert_1d_list_to_bfloat16_binary(input_list):
     """
     return [bfloat16_to_binary(value) for value in input_list]
 
+import torch
+
 ################################### save .txt ###################################
 
 def save_2d_list_to_file(input_list, filename):
@@ -83,16 +87,11 @@ torch.manual_seed(seed=17)
 A_fp64 = torch.rand((64, 128), dtype=torch.float64) # 0 ~ 1
 B_fp64 = torch.rand((64, 128), dtype=torch.float64)
 
-"""
-# scaling
-def tensor_scaling(tensor):
-    scaled_tensor = tensor * (10.0 - 1.0) + 1.0
-    return scaled_tensor
 
-A_fp64 = tensor_scaling(A_fp64)
-B_fp64 = tensor_scaling(B_fp64)
+scale = 20  # Define the scale factor
+A_fp64 = (torch.rand((64, 128), dtype=torch.float64) * 2 - 1) * scale  # Rescale to [-scale, scale]
+B_fp64 = (torch.rand((64, 128), dtype=torch.float64) * 2 - 1) * scale  # Rescale to [-scale, scale]
 
-"""
 
 A_bf16 = A_fp64.to(dtype=torch.bfloat16)
 A_fp16 = A_fp64.to(dtype=torch.float16)
@@ -187,9 +186,6 @@ print('')
 
 accumulation = sum(A_bf16[0])
 print("bf16 Accumulation result (A first row) : ", accumulation)
-#accumulation = sum(B_fp16[0])
-#print("Accumulation result (B first row) : ", accumulation)
-
 accumulation = sum(A_fp16[0])
 print("fp16 Accumulation result (A first row) : ", accumulation)
 accumulation = sum(A_fp32[0])
@@ -203,7 +199,7 @@ from Adder_tree import Adder_tree
 
 adder_tree_A = Adder_tree(A_bf16[0], count=128)
 print("bf16 Adder tree result (A first row) : ", adder_tree_A)
-#adder_tree_B = Adder_tree(B_bf16[0], count=128)
+adder_tree_B = Adder_tree(B_bf16[0], count=128)
 #print("Adder tree result (B first row) : ", adder_tree_B)
 
 adder_tree_fp16 = Adder_tree(A_fp16[0], count=128)
@@ -215,15 +211,13 @@ print("fp64 Adder tree result (A first row) : ", adder_tree_fp64)
 print('')
 
 
-"""
-
 ################################### For HW test ###################################
 
 
 # Matmul TB
 
 A_binary = convert_2d_list_to_bfloat16_binary(A_bf16)
-B_binary = convert_2d_list_to_bfloat16_binary(A_bf16)
+B_binary = convert_2d_list_to_bfloat16_binary(B_bf16)
 OUTPUT = convert_2d_list_to_bfloat16_binary(OUTPUT)
 
 save_2d_list_to_file(A_binary, "A_64x128_raw.txt")
@@ -232,12 +226,30 @@ save_2d_list_to_file(OUTPUT, "OUT_64x64_raw.txt")
 
 # Adder, Adder Tree, PE Array TB
 
+A_1st_row_binary = convert_1d_list_to_bfloat16_binary(A_bf16[0])
+B_1st_row_binary = convert_1d_list_to_bfloat16_binary(B_bf16[0])
+adder_output = convert_1d_list_to_bfloat16_binary(adder_output)
+PE_array_output = convert_1d_list_to_bfloat16_binary(PE_array_output)
 
-        
+save_1d_list_to_file(A_1st_row_binary, "A_1x128_raw.txt")
+save_1d_list_to_file(B_1st_row_binary, "B_1x128_raw.txt")
+save_1d_list_to_file(adder_output, "SW_BF_adder_raw.txt")
+save_1d_list_to_file(PE_array_output, "SW_PE_array_raw.txt")
+print("Adder tree result A : ", adder_tree_A, bfloat16_to_binary(adder_tree_A))
+print("Adder tree result B : ", adder_tree_B, bfloat16_to_binary(adder_tree_B))
+
+
+################################### For HW debugging ###################################
+
+"""
+list = []
+for a, b in zip(A_bf16[0], B_bf16[0]):
+    #print(a)
+    #print(b)
+    #print(a*b)
+    list.append(bfloat16_to_binary(a*b))
     
+print(list[0:3])
 
-save_1d_list_to_file(A_bf16[0])
-save_1d_list_to_file(B_bf16[0])
-save_1d_list_to_file()
-
+print(A_bf16[0][0])
 """

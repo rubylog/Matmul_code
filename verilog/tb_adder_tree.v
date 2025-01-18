@@ -35,18 +35,18 @@ module adder_tree_tb;
         PE_result = 0;
         #20
         // 파일에서 데이터 읽기
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0110\\vs_code\\python\\input_A_exp135_raw.txt", input_mem_A);
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0110\\vs_code\\python\\input_B_exp135_raw.txt", input_mem_B);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\A_1x128_raw.txt", input_mem_A);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\B_1x128_raw.txt", input_mem_B);
 
         // input_mem_A와 input_mem_B의 값을 A와 B로 변환하여 저장
         for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
-            PE_result[((ARRAY_SIZE-i)*DATA_WIDTH - 1) -: DATA_WIDTH] = input_mem_A[ARRAY_SIZE - 1 - i];
+            PE_result[((ARRAY_SIZE-i)*DATA_WIDTH - 1) -: DATA_WIDTH] = input_mem_A[i];
         end
 
         #10 // after 1 clk period
 
         for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
-            PE_result[((ARRAY_SIZE-i)*DATA_WIDTH - 1) -: DATA_WIDTH] = input_mem_B[ARRAY_SIZE - 1 - i];
+            PE_result[((ARRAY_SIZE-i)*DATA_WIDTH - 1) -: DATA_WIDTH] = input_mem_B[i];
         end
     end
 

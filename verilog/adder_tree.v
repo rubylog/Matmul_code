@@ -1,3 +1,5 @@
+/* Seven stage PIPELINED Bfloat16 adder tree */
+
 module adder_tree#(
     parameter DATA_WIDTH = 16,
     parameter ARRAY_SIZE = 128
@@ -5,7 +7,7 @@ module adder_tree#(
     input clk,
     input rst_n,
     input [(DATA_WIDTH*ARRAY_SIZE)-1:0] PE_result, // FF register will be inserted at top module for pipeline
-    output reg [DATA_WIDTH-1:0] layer7_out_reg // ?���??��?�� ?��?��?��?��?��
+    output reg [DATA_WIDTH-1:0] layer7_out_reg 
 );
 
 localparam PE_RESULT_WIDTH = (DATA_WIDTH*ARRAY_SIZE);

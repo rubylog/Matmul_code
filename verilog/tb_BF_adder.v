@@ -26,7 +26,7 @@ module BF_adder_tb;
     reg [DATA_WIDTH-1:0] Add_mem [ARRAY_SIZE-1:0];
 
     integer i;
-    integer file; // ?��?�� ?��?��?��
+    integer file;
 
     initial begin
         #10;
@@ -34,15 +34,15 @@ module BF_adder_tb;
 
 
         // Open input and output files
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0110\\vs_code\\python\\input_A_exp135_raw.txt", input_mem_A);
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0110\\vs_code\\python\\input_B_exp135_raw.txt", input_mem_B);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\A_1x128_raw.txt", input_mem_A);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\B_1x128_raw.txt", input_mem_B);
 
         // Process inputs and write results
         for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
-            num1 = input_mem_A[ARRAY_SIZE - 1 - i];
-            num2 = input_mem_B[ARRAY_SIZE - 1 - i];
+            num1 = input_mem_A[i];
+            num2 = input_mem_B[i];
             #10
-            Add_mem[ARRAY_SIZE - 1 - i] = sum;
+            Add_mem[i] = sum;
             $display("Iteration %0d: num1=%b, num2=%b, sum=%b", i, num1, num2, sum);
         end
 
@@ -52,8 +52,7 @@ module BF_adder_tb;
     
     initial begin
 
-        // 결과 ?��?�� ?���?
-        file = $fopen("C:\\Users\\conqu\\Desktop\\2025_winter\\0110\\vs_code\\verilog\\output_Add.txt", "w");
+        file = $fopen("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\tb_BF_adder_raw.txt", "w");
         if (file == 0) begin
             $display("Error: Could not open file.");
             $stop;
@@ -62,12 +61,11 @@ module BF_adder_tb;
         #1300
 
         for (k = 0; k < ARRAY_SIZE; k = k + 1) begin
-            $fwrite(file, "%b\n", Add_mem[ARRAY_SIZE- 1 - k]);
+            $fwrite(file, "%b\n", Add_mem[k]);
         end
 
         #10
 
-        // ?��?�� ?���?
         $fclose(file);
 
         $display("Simulation completed. Results saved to output_Add.txt.");

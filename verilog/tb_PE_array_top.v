@@ -35,8 +35,8 @@ module TB_PE_array_top;
         B = 0;
         #10
         // 파일에서 데이터 읽기
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0114\\vs_code\\python\\input_A_raw.txt", input_mem_A);
-        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0114\\vs_code\\python\\input_B_raw.txt", input_mem_B);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\A_1x128_raw.txt", input_mem_A);
+        $readmemb("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\B_1x128_raw.txt", input_mem_B);
 
         // input_mem_A와 input_mem_B의 값을 A와 B로 변환하여 저장
         for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
@@ -52,7 +52,7 @@ module TB_PE_array_top;
         $display("Simulation started.");
 
         // 결과 파일 열기
-        file = $fopen("C:\\Users\\conqu\\Desktop\\2025_winter\\0114\\vs_code\\verilog\\output_Mul.txt", "w");
+        file = $fopen("C:\\Users\\conqu\\Desktop\\2025_winter\\0119\\Matmul_code\\python\\tb_PE_Array_raw.txt", "w");
         if (file == 0) begin
             $display("Error: Could not open file.");
             $stop;
@@ -65,7 +65,7 @@ module TB_PE_array_top;
         // 파일 닫기
         $fclose(file);
 
-        $display("Simulation completed. Results saved to output_Mul.txt.");
+        $display("Simulation completed. Results saved to tb_PE_Array_raw.txt.");
 
         // 종료
         $stop;
